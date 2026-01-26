@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:codeforces.com)",
+      "WebFetch(domain:atcoder.jp)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.luogu.com.cn)",
+      "WebFetch(domain:oipage.tommyjin.cn)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(python:*)"
+    ]
+  }
+}
