@@ -1,14 +1,14 @@
 本周赛事预告~
 
 Codeforces:
-Codeforces Round 1077 (Div. 1)  1.29 22:35-1.30 1:35
-Codeorces Round 1077 (Div. 2)  1.29 22:35-1.30 1:35
+Codeforces Round 1077 (Div. 1)  01-29 22:35 - 01-30 1:35
+Codeforces Round 1077 (Div. 2)  01-29 22:35 - 01-30 1:35
 
 Atcoder:
-Denso Create Programming Contest 2026（ABC 443） 1/31(Sat) 20:00
-RECRUIT Nihonbashi Half Marathon 2026 Winter (AHC 060) 2/1(Sun) 18:00
+Denso Create Programming Contest 2026（AtCoder Beginner Contest 443） 01-31  20:00
+RECRUIT Nihonbashi Half Marathon 2026 Winter (AtCoder Heuristic Contest 060)  02-01 18:00
 
 Luogu:
-【LGR-263-Div.4】洛谷入门赛 #43	IOI Rated 官方比赛	01-30 19:00 ~ 21:00
-嘟嘟哒哒大作战	IOI 团队公开赛	01-29 18:00 ~ 22:00
-洛谷 2025 年度试题推荐选集	IOI 官方比赛	01-24 17:00 ~ 02-04 17:00	
+【LGR-263-Div.4】洛谷入门赛 #43		01-30 19:00 - 01-30 21:00
+嘟嘟哒哒大作战		01-29 18:00 - 01-29 22:00
+洛谷 2025 年度试题推荐选集		01-24 17:00 - 02-04 17:00	

@@ -1,11 +1,13 @@
 import { ContestData } from '@/lib/types';
+import CopyButton from './CopyButton';
 
 // Revalidate every hour (3600 seconds)
 export const revalidate = 3600;
 
 async function getContests(): Promise<ContestData> {
   try {
-    const response = await fetch('http://localhost:3000/api/contests', {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
+    const response = await fetch(`${baseUrl}/api/contests`, {
       cache: 'no-store',
     });
 
@@ -41,10 +43,15 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-2">本周赛事预告~</h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-        最后更新: {formatDate(data.lastUpdated)}
-      </p>
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">本周赛事预告~</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            最后更新: {formatDate(data.lastUpdated)}
+          </p>
+        </div>
+        <CopyButton data={data} />
+      </div>
 
       {/* Codeforces Section */}
       <section className="mb-8">

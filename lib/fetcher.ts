@@ -16,8 +16,8 @@ export async function fetchContestHTML(): Promise<string> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const html = await response.text();
-    return html;
+    const text = await response.text();
+    return text;
   } catch (error) {
     clearTimeout(timeoutId);
 

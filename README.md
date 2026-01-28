@@ -1,2 +1,2 @@
 # contests
-Contest preciew, test for claude code
+A Contest preciew website. 

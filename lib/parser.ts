@@ -2,17 +2,16 @@ import * as cheerio from 'cheerio';
 import { Contest } from './types';
 
 function formatDateTime(dateStr: string): string {
-  // Convert "2026-01-29 22:35:00" to "1.29 22:35"
+  // Convert "2026-01-29 22:35:00" to "01-29 22:35"
   const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
   if (match) {
     const [, , month, day, hour, minute] = match;
-    return `${parseInt(month)}.${parseInt(day)} ${hour}:${minute}`;
+    return `${month}-${day} ${hour}:${minute}`;
   }
   return dateStr;
 }
 
 function addHoursToDateTime(dateStr: string, hours: number): string {
-  // Parse the date string and add hours
   const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
   if (match) {
     const [, year, month, day, hour, minute, second] = match;
@@ -30,41 +29,29 @@ function addHoursToDateTime(dateStr: string, hours: number): string {
     const newDay = String(date.getDate()).padStart(2, '0');
     const newHour = String(date.getHours()).padStart(2, '0');
     const newMinute = String(date.getMinutes()).padStart(2, '0');
-    const newSecond = String(date.getSeconds()).padStart(2, '0');
 
-    return `${date.getFullYear()}-${newMonth}-${newDay} ${newHour}:${newMinute}:${newSecond}`;
+    return `${newMonth}-${newDay} ${newHour}:${newMinute}`;
   }
   return dateStr;
 }
 
-function formatAtCoderDateTime(dateStr: string): string {
-  // Convert "2026-01-31 20:00:00" to "1/31(Sat) 20:00"
+function isWithinWeek(dateStr: string): boolean {
   const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
-  if (match) {
-    const [, year, month, day, hour, minute] = match;
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const dayName = days[date.getDay()];
-    return `${parseInt(month)}/${parseInt(day)}(${dayName}) ${hour}:${minute}`;
-  }
-  return dateStr;
-}
+  if (!match) return false;
 
-function formatLuoguDateTime(startStr: string, endStr?: string): string {
-  // Convert "2026-01-30 19:00:00" to "01-30 19:00"
-  const formatSingle = (dateStr: string) => {
-    const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
-    if (match) {
-      const [, , month, day, hour, minute] = match;
-      return `${month}-${day} ${hour}:${minute}`;
-    }
-    return dateStr;
-  };
+  const [, year, month, day, hour, minute] = match;
+  const contestDate = new Date(
+    parseInt(year),
+    parseInt(month) - 1,
+    parseInt(day),
+    parseInt(hour),
+    parseInt(minute)
+  );
 
-  if (endStr) {
-    return `${formatSingle(startStr)} ~ ${formatSingle(endStr)}`;
-  }
-  return formatSingle(startStr);
+  const now = new Date();
+  const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  return contestDate >= now && contestDate <= oneWeekLater;
 }
 
 export function parseContestHTML(html: string): {
@@ -79,11 +66,9 @@ export function parseContestHTML(html: string): {
   const luogu: Contest[] = [];
 
   // Parse Codeforces contests
-  let inCodeforcesSection = false;
   $('h2').each((_, h2) => {
     const text = $(h2).text();
     if (text.includes('Codeforces')) {
-      inCodeforcesSection = true;
       const table = $(h2).next('table');
 
       table.find('tbody tr').each((_, row) => {
@@ -93,22 +78,16 @@ export function parseContestHTML(html: string): {
           const startTime = $(cells[2]).text().trim();
           const duration = parseFloat($(cells[3]).text().trim());
 
-          if (name && startTime) {
+          if (name && startTime && isWithinWeek(startTime)) {
             const formattedStart = formatDateTime(startTime);
-
-            // Calculate end time
-            let endTime = '';
-            if (duration && !isNaN(duration)) {
-              const endStr = addHoursToDateTime(startTime, duration);
-              endTime = formatDateTime(endStr);
-            }
+            const endTime = !isNaN(duration) ? addHoursToDateTime(startTime, duration) : undefined;
 
             codeforces.push({
               id: `cf-${codeforces.length}`,
               platform: 'Codeforces',
               name,
               startTime: formattedStart,
-              endTime: endTime || undefined,
+              endTime,
             });
           }
         }
@@ -125,17 +104,16 @@ export function parseContestHTML(html: string): {
       table.find('tbody tr').each((_, row) => {
         const cells = $(row).find('td');
         if (cells.length >= 2) {
-          // Get the HTML content and extract text properly
           const nameHtml = $(cells[0]).find('a').html() || '';
           const name = $('<div>').html(nameHtml).text().trim();
           const startTime = $(cells[1]).text().trim();
 
-          if (name && startTime) {
+          if (name && startTime && isWithinWeek(startTime)) {
             atcoder.push({
               id: `ac-${atcoder.length}`,
               platform: 'AtCoder',
               name,
-              startTime: formatAtCoderDateTime(startTime),
+              startTime: formatDateTime(startTime),
             });
           }
         }
@@ -156,12 +134,16 @@ export function parseContestHTML(html: string): {
           const startTime = $(cells[1]).text().trim();
           const endTime = $(cells[2]).text().trim();
 
-          if (name && startTime) {
+          if (name && startTime && isWithinWeek(startTime)) {
+            const formattedStart = formatDateTime(startTime);
+            const formattedEnd = endTime ? formatDateTime(endTime) : undefined;
+            const timeStr = formattedEnd ? `${formattedStart} - ${formattedEnd}` : formattedStart;
+
             luogu.push({
               id: `lg-${luogu.length}`,
               platform: 'Luogu',
               name,
-              startTime: formatLuoguDateTime(startTime, endTime),
+              startTime: timeStr,
             });
           }
         }
