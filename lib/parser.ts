@@ -59,7 +59,7 @@ export function parseContestHTML(html: string): {
   atcoder: Contest[];
   luogu: Contest[];
 } {
-  const $ = cheerio.load(html, { decodeEntities: true });
+  const $ = cheerio.load(html);
 
   const codeforces: Contest[] = [];
   const atcoder: Contest[] = [];
