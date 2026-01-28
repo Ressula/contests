@@ -1,2 +1,2 @@
 # contests
-A Contest preciew website. 
+A Contest preview website. 
