@@ -1,21 +1,20 @@
 import { ContestData } from '@/lib/types';
 import CopyButton from './CopyButton';
+import { fetchContestHTML } from '@/lib/fetcher';
+import { parseContestHTML } from '@/lib/parser';
 
 // Revalidate every hour (3600 seconds)
 export const revalidate = 3600;
 
 async function getContests(): Promise<ContestData> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
-    const response = await fetch(`${baseUrl}/api/contests`, {
-      cache: 'no-store',
-    });
+    const html = await fetchContestHTML();
+    const contests = parseContestHTML(html);
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch contests');
-    }
-
-    return await response.json();
+    return {
+      ...contests,
+      lastUpdated: Date.now(),
+    };
   } catch (error) {
     console.error('Error fetching contests:', error);
     return {
