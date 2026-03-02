@@ -1,18 +1,24 @@
 import { ContestData } from '@/lib/types';
 import CopyButton from './CopyButton';
-import { fetchContestHTML } from '@/lib/fetcher';
-import { parseContestHTML } from '@/lib/parser';
+import { fetchContestHTML, fetchLuoguContests } from '@/lib/fetcher';
+import { parseContestHTML, parseLuoguContests } from '@/lib/parser';
 
 // Revalidate every hour (3600 seconds)
 export const revalidate = 3600;
 
 async function getContests(): Promise<ContestData> {
   try {
-    const html = await fetchContestHTML();
+    const [html, luoguContests] = await Promise.all([
+      fetchContestHTML(),
+      fetchLuoguContests(),
+    ]);
+
     const contests = parseContestHTML(html);
+    const luogu = parseLuoguContests(luoguContests);
 
     return {
       ...contests,
+      luogu,
       lastUpdated: Date.now(),
     };
   } catch (error) {
@@ -132,7 +138,7 @@ export default async function Home() {
       </section>
 
       <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-400">
-        <p>数据来源: oipage.tommyjin.cn</p>
+        <p>数据来源: oipage.tommyjin.cn (Codeforces & AtCoder), contests.guru (Luogu)</p>
         <p className="mt-2">每小时自动更新</p>
       </footer>
     </main>

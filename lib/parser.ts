@@ -1,6 +1,17 @@
 import * as cheerio from 'cheerio';
 import { Contest } from './types';
 
+interface ContestsGuruContest {
+  id: string;
+  external_id: string;
+  title: string;
+  url: string;
+  platform: string;
+  start_time: string;
+  end_time: string;
+  duration_seconds: number;
+}
+
 function formatDateTime(dateStr: string): string {
   // Convert "2026-01-29 22:35:00" to "01-29 22:35"
   const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
@@ -121,35 +132,39 @@ export function parseContestHTML(html: string): {
     }
   });
 
-  // Parse Luogu contests
-  $('h2').each((_, h2) => {
-    const text = $(h2).text();
-    if (text.includes('洛谷') || text.includes('Luogu')) {
-      const table = $(h2).next('table');
+  return { codeforces, atcoder, luogu: [] };
+}
 
-      table.find('tbody tr').each((_, row) => {
-        const cells = $(row).find('td');
-        if (cells.length >= 3) {
-          const name = $(cells[0]).find('a').text().trim();
-          const startTime = $(cells[1]).text().trim();
-          const endTime = $(cells[2]).text().trim();
+export function parseLuoguContests(contests: ContestsGuruContest[]): Contest[] {
+  const luogu: Contest[] = [];
+  const now = new Date();
+  const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-          if (name && startTime && isWithinWeek(startTime)) {
-            const formattedStart = formatDateTime(startTime);
-            const formattedEnd = endTime ? formatDateTime(endTime) : undefined;
-            const timeStr = formattedEnd ? `${formattedStart} - ${formattedEnd}` : formattedStart;
+  for (const contest of contests) {
+    const startTime = new Date(contest.start_time);
 
-            luogu.push({
-              id: `lg-${luogu.length}`,
-              platform: 'Luogu',
-              name,
-              startTime: timeStr,
-            });
-          }
-        }
+    if (startTime >= now && startTime <= oneWeekLater) {
+      const endTime = new Date(contest.end_time);
+
+      // Format to "MM-DD HH:mm"
+      const formatTime = (date: Date) => {
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hour = String(date.getHours()).padStart(2, '0');
+        const minute = String(date.getMinutes()).padStart(2, '0');
+        return `${month}-${day} ${hour}:${minute}`;
+      };
+
+      luogu.push({
+        id: contest.id,
+        platform: 'Luogu',
+        name: contest.title || 'Untitled Contest',
+        startTime: formatTime(startTime),
+        endTime: formatTime(endTime),
+        url: contest.url,
       });
     }
-  });
+  }
 
-  return { codeforces, atcoder, luogu };
+  return luogu;
 }

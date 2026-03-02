@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { fetchContestHTML } from '@/lib/fetcher';
-import { parseContestHTML } from '@/lib/parser';
+import { fetchContestHTML, fetchLuoguContests } from '@/lib/fetcher';
+import { parseContestHTML, parseLuoguContests } from '@/lib/parser';
 import { cache } from '@/lib/cache';
 import { ContestData } from '@/lib/types';
 
@@ -14,11 +14,17 @@ export async function GET() {
     }
 
     // Fetch fresh data
-    const html = await fetchContestHTML();
+    const [html, luoguContests] = await Promise.all([
+      fetchContestHTML(),
+      fetchLuoguContests(),
+    ]);
+
     const contests = parseContestHTML(html);
+    const luogu = parseLuoguContests(luoguContests);
 
     const data: ContestData = {
       ...contests,
+      luogu,
       lastUpdated: Date.now(),
     };
 
