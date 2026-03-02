@@ -141,26 +141,30 @@ export function parseLuoguContests(contests: ContestsGuruContest[]): Contest[] {
   const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   for (const contest of contests) {
+    // Parse UTC time and convert to China timezone (UTC+8)
     const startTime = new Date(contest.start_time);
+    const endTime = new Date(contest.end_time);
 
     if (startTime >= now && startTime <= oneWeekLater) {
-      const endTime = new Date(contest.end_time);
-
-      // Format to "MM-DD HH:mm"
+      // Format to "MM-DD HH:mm" in China timezone
       const formatTime = (date: Date) => {
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hour = String(date.getHours()).padStart(2, '0');
-        const minute = String(date.getMinutes()).padStart(2, '0');
+        // Convert to China timezone by adding 8 hours
+        const chinaTime = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+        const month = String(chinaTime.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(chinaTime.getUTCDate()).padStart(2, '0');
+        const hour = String(chinaTime.getUTCHours()).padStart(2, '0');
+        const minute = String(chinaTime.getUTCMinutes()).padStart(2, '0');
         return `${month}-${day} ${hour}:${minute}`;
       };
+
+      const formattedStart = formatTime(startTime);
+      const formattedEnd = formatTime(endTime);
 
       luogu.push({
         id: contest.id,
         platform: 'Luogu',
         name: contest.title || 'Untitled Contest',
-        startTime: formatTime(startTime),
-        endTime: formatTime(endTime),
+        startTime: `${formattedStart} - ${formattedEnd}`,
         url: contest.url,
       });
     }
